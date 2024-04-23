@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bond Purchase Website</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        main {
+            padding: 20px;
+            margin: 0 auto;
+            max-width: 800px;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"],
+        select {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+            display: inline-block;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+        .analysis-section {
+            margin-top: 20px;
+        }
+        h2, h3 {
+            color: #333;
+        }
+        .analysis-option {
+            background-color: #fff;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .analysis-option h3 {
+            margin-top: 0;
+        }
+        .analysis-option form {
+            margin-top: 20px;
+        }
+        .analysis-result {
+            margin-top: 20px;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Bond Purchase Website</h1>
+    </header>
+
+    <main>
+
+        <form method="GET" action="/search">
+    <label for="table">Search Table:</label>
+    <select name="table" id="table" onchange="updateColumns()">
+        <option value="purchase">Purchase</option>
+        <option value="redemption">Redemption</option>
+    </select>
+
+    <label for="column">Search by:</label>
+    <select name="column" id="column">
+        <!-- This will be populated dynamically by JavaScript -->
+    </select>
+
+    <input type="text" name="query" placeholder="Enter your search query" required>
+
+    <button type="submit">Search</button>
+</form>
+        <script>
+            // Define a JavaScript object to hold searchable columns for each table
+            const columnsByTable = {
+                purchase: ['sno' , 'ref', 'journal_date', 'date_of_purchase', 'date_of_expiry', 'name_purchaser', 'prefix', 'bond_no', 'denominations', 'issue_branch_code', 'issue_teller'],
+                redemption: ['sno' , 'date_encashment', 'party', 'acc_no', 'prefix', 'bond_no', 'denominations', 'pay_branch_code', 'pay_teller']
+            };
+        
+            // Function to update the column options based on the selected table
+            function updateColumns() {
+                const tableSelect = document.getElementById('table');
+                const columnSelect = document.getElementById('column');
+                const selectedTable = tableSelect.value;
+        
+                // Clear existing options
+                columnSelect.innerHTML = '';
+        
+                // Add new options based on the selected table
+                columnsByTable[selectedTable].forEach(column => {
+                    const option = document.createElement('option');
+                    option.value = column;
+                    option.textContent = column;
+                    columnSelect.appendChild(option);
+                });
+            }
+        
+            // Initialize the column options based on the default selected table
+            updateColumns();
+        </script>
+        <section class="analysis-section">
+            <h2>Bond Purchase Analysis</h2>
+            <div class="analysis-option">
+                <h3>By Company/Individual</h3>
+                <form method="post" action="/company">
+                    <input type="text" name="comp" placeholder="Search company..." />
+                    <select name="comp_name">
+                        {% for buy in buyer %}
+                            <option value="{{ buy[0] }}">{{ buy[0] }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="button">Search</button>
+                </form>
+            </div>
+
+            <div class="analysis-option">
+                <h3>By Political Party</h3>
+                <form method="GET" action="/party">
+                    <input type="text" name="party" placeholder="Search party..." />
+                    <select name="party">
+                        {% for party in parties %}
+                            <option value="{{ party }}">{{ party }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="button">Search</button>
+                </form>
+            </div>
+
+            <div class="analysis-option">
+                <h3>Party Donations by Company</h3>
+                <form method="GET" action="/company">
+                    <input type="text" name="comp" placeholder="Search company..." />
+                    <select>
+                        
+
+                        {% for buy in buyer %}
+                            <option value="{{ buy[0] }}">{{ buy[0] }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="button">Search</button>
+                </form>
+                <div class="analysis-result">
+                    <ul id="party-donations">
+                    </ul>
+                </div>
+            </div>
+
+            <div class="analysis-option">
+                <h3>Company Donations by Party</h3>
+                <form method="GET" action="/party_name">
+                    <input type="text" name="party_name" placeholder="Search party..." />
+                    <select>
+                        {% for party in parties %}
+                            <option value="{{ party }}">{{ party }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="button">Search</button>
+                </form>
+                <div class="analysis-result">
+                    <ul id="company-donations">
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
